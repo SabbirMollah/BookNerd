@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "84406108581",
+    "firebase_url": "https://booknerd-4759f.firebaseio.com",
+    "project_id": "booknerd-4759f",
+    "storage_bucket": "booknerd-4759f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:84406108581:android:915d513dc5cf35ed67284c",
+        "android_client_info": {
+          "package_name": "com.codesmugglers.booknerd"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "84406108581-fo90k4u647t9kap7aop13bnfm5irdl3r.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.codesmugglers.booknerd",
+            "certificate_hash": "b3b22631d033163e4d7849a39ebf455437375e9b"
+          }
+        },
+        {
+          "client_id": "84406108581-qil98jf7atk5d5s2en1i8ejgcv1ghsqg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQHAfrzmeyoF07x1UAq3eMoXubYlwPcsQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "84406108581-qil98jf7atk5d5s2en1i8ejgcv1ghsqg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
