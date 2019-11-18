@@ -14,4 +14,10 @@
         app:rotation_degrees="15.5"
         tools:context=".MainActivity" />
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/sign_out"
+        android:onClick="onCLickLogout"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
