@@ -21,6 +21,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
 public class RegistrationActivity extends AppCompatActivity {
+    private static String TAG = "LoginActivity";
 
     private Button mRegister;
     private EditText mEmail, mPassword, mName;
@@ -43,7 +44,6 @@ public class RegistrationActivity extends AppCompatActivity {
                     Intent intent = new Intent(RegistrationActivity.this, MainActivity.class);
                     startActivity(intent);
                     finish();
-                    return;
                 }
             }
         };
@@ -65,11 +65,14 @@ public class RegistrationActivity extends AppCompatActivity {
                 mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(RegistrationActivity.this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        if(!task.isSuccessful()){
-                            Toast.makeText(RegistrationActivity.this, "Sign up error", Toast.LENGTH_SHORT).show();
+                        if(task.isSuccessful()){
+                            Log.d(TAG, "createUserWithEmail:success");
+                            FirebaseUser user = mAuth.getCurrentUser();
                         }
                         else{
-                            String userId = mAuth.getCurrentUser().getUid();
+                            Log.w(TAG, "createUserWithEmail:failure", task.getException());
+                            Toast.makeText(RegistrationActivity.this, "Authentication failed.",
+                                    Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -81,5 +84,19 @@ public class RegistrationActivity extends AppCompatActivity {
         Intent loginIntent = new Intent(RegistrationActivity.this, LoginActivity.class);
         startActivity(loginIntent);
         finish();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mAuth.addAuthStateListener(firebaseAuthStateListener);
+    }
+
+    @Override
+    protected void onStop(){
+        super.onStop();
+        if(firebaseAuthStateListener != null){
+            mAuth.removeAuthStateListener(firebaseAuthStateListener);
+        }
     }
 }
