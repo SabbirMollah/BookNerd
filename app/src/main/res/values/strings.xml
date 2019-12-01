@@ -12,4 +12,5 @@
     <string name="book_name">Book Name</string>
     <string name="author_name">Author Name</string>
     <string name="add_book">Add a book</string>
+    <string name="todo">TODO</string>
 </resources>

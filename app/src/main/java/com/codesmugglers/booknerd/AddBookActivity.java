@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.SearchView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -15,6 +16,9 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 
 import org.json.JSONArray;
@@ -22,8 +26,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AddBookActivity extends AppCompatActivity implements BookAdapter.OnItemClickListener {
+
+    private FirebaseAuth mAuth;
 
     private RecyclerView mRecyclerView;
     private BookAdapter mBookAdapter;
@@ -35,6 +43,8 @@ public class AddBookActivity extends AppCompatActivity implements BookAdapter.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_book);
+
+        mAuth = FirebaseAuth.getInstance();
 
         mRecyclerView = findViewById(R.id.recycler_view);
         mRecyclerView.setHasFixedSize(true);
@@ -121,7 +131,8 @@ public class AddBookActivity extends AppCompatActivity implements BookAdapter.On
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Log.i("FOUND", error.toString());
+                        Log.e("FOUND", error.toString());
+                        Toast.makeText(AddBookActivity.this,error.toString(),Toast.LENGTH_SHORT).show();
                     }
                 }
 
@@ -132,7 +143,19 @@ public class AddBookActivity extends AppCompatActivity implements BookAdapter.On
 
     @Override
     public void onItemClick(int position) {
-        Log.e("PRESSED", "PRESSED");
+        String userId = mAuth.getCurrentUser().getUid();
+
+        DatabaseReference booksDb = FirebaseDatabase.getInstance().getReference().child("Books");
+        Map<String,String> userData = new HashMap<String,String>();
+        userData.put("Name", mBookList.get(position).getTitle());
+        userData.put("ISBN", mBookList.get(position).getIsbn());
+        userData.put("Owner", userId);
+        String key = booksDb.push().getKey();
+        booksDb.child(key).setValue(userData);
+
+        DatabaseReference userDb = FirebaseDatabase.getInstance().getReference().child("Users")
+                .child(userId).child("Books");
+        userDb.push().setValue(key);
     }
 
 

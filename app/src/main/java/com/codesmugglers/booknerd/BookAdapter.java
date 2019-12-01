@@ -1,6 +1,7 @@
 package com.codesmugglers.booknerd;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,7 +51,8 @@ public class BookAdapter extends RecyclerView.Adapter {
 
         ((BookViewHolder)holder).mAuthor.setText((authorName));
         ((BookViewHolder)holder).mTitle.setText((title));
-        Picasso.get().load(book.getCoverUrl()).fit().centerInside().into(((BookViewHolder)holder).mCover);
+        Picasso.get().load(coverUrl).fit().centerInside().into(((BookViewHolder)holder).mCover);
+
     }
 
     @Override
