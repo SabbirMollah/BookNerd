@@ -6,6 +6,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.SearchView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -27,6 +29,8 @@ public class AddBookActivity extends AppCompatActivity implements BookAdapter.On
     private BookAdapter mBookAdapter;
     private ArrayList<Book> mBookList;
     private RequestQueue mRequestQueue;
+    private SearchView mSearchView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,13 +45,31 @@ public class AddBookActivity extends AppCompatActivity implements BookAdapter.On
         mRequestQueue = Volley.newRequestQueue(this);
 
 
+        mSearchView = findViewById(R.id.searchView);
+        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+
+                if( ! mSearchView.isIconified()) {
+                    mSearchView.setIconified(true);
+                }
+                parseJson(query);
+                return false;
+            }
+            @Override
+            public boolean onQueryTextChange(String s) {
+                // UserFeedback.show( "SearchOnQueryTextChanged: " + s);
+                return false;
+            }
+        });
 
 
-        parseJson();
     }
 
-    private void parseJson() {
-        String url = "https://openlibrary.org/search.json?q=the+lord+of+the+rings";
+    private void parseJson(String query) {
+        mBookList.clear();
+        query = query.replace(" ", "+");
+        String url = "https://openlibrary.org/search.json?q=" + query;
 
         JsonObjectRequest objectRequest = new JsonObjectRequest(Request.Method.GET, url, null,
                 new Response.Listener<JSONObject>() {
@@ -112,4 +134,6 @@ public class AddBookActivity extends AppCompatActivity implements BookAdapter.On
     public void onItemClick(int position) {
         Log.e("PRESSED", "PRESSED");
     }
+
+
 }
