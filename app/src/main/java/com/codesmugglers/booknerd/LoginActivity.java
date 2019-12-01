@@ -89,4 +89,6 @@ public class LoginActivity extends AppCompatActivity {
         startActivity(registrationIntent);
         finish();
     }
+
+
 }

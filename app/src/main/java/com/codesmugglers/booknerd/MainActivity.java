@@ -92,6 +92,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
+
     }
 
 
@@ -104,4 +106,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    public void onCLickAddBook(View view) {
+        Intent ownedBooksIntent = new Intent(MainActivity.this, AddBookActivity.class);
+        startActivity(ownedBooksIntent);
+    }
 }
