@@ -8,4 +8,8 @@
     <string name="create_a_new_acccount">Create a new acccount!</string>
     <string name="already_have_an_account_log_in">Already have an account? Log in!</string>
     <string name="sign_out">Sign Out</string>
+    <string name="owned_books">Owned Books</string>
+    <string name="book_name">Book Name</string>
+    <string name="author_name">Author Name</string>
+    <string name="add_book">Add a book</string>
 </resources>
