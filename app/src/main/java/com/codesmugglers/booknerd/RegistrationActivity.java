@@ -79,7 +79,7 @@ public class RegistrationActivity extends AppCompatActivity {
 
         mRegister = findViewById(R.id.register);
 
-        mName = findViewById(R.id.name);
+        mName = findViewById(R.id.textview1);
         mEmail = findViewById(R.id.email);
         mPassword = findViewById(R.id.password);
         mCity = findViewById(R.id.city);
