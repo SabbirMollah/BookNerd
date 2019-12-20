@@ -2,11 +2,17 @@ package com.codesmugglers.booknerd;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -25,7 +31,9 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.zxing.Result;
 
+import me.dm7.barcodescanner.zxing.ZXingScannerView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -49,6 +57,9 @@ public class AddBookActivity extends AppCompatActivity implements BookAdapter.On
     private EditText mTitle;
     private EditText mAuthor;
     private EditText mIsbn;
+
+    private static final int CAMERA_PERMISSION_CODE = 1;
+    private ZXingScannerView scannerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -183,7 +194,63 @@ public class AddBookActivity extends AppCompatActivity implements BookAdapter.On
     }
 
     public void onClickScan(View view) {
-        //parseJson(query);
+        if(ContextCompat.checkSelfPermission(AddBookActivity.this,
+                Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED){
+            scannerView = new ZXingScannerView(this);
+            scannerView.setResultHandler(new ZXingScannerResultHandler());
+            setContentView(scannerView);
+            scannerView.startCamera();
+        }
+        else{
+            requestCameraPermission();
+        }
+    }
+
+    class ZXingScannerResultHandler implements ZXingScannerView.ResultHandler{
+        @Override
+        public void handleResult(Result result) {
+            String resultCode = result.getText();
+            Toast.makeText(AddBookActivity.this, resultCode, Toast.LENGTH_SHORT).show();
+            setContentView(R.layout.activity_add_book);
+            
+            scannerView.stopCamera();
+        }
+    }
+
+    private void requestCameraPermission(){
+        if(ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.CAMERA)){
+            new AlertDialog.Builder(this)
+                    .setTitle("Permission Needed").
+                    setMessage("Hellow")
+                    .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+
+                        }
+                    })
+                    .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialogInterface.dismiss();
+                        }
+                    })
+                    .create().show();
+        }
+        else {
+            ActivityCompat.requestPermissions(this,new String[] {Manifest.permission.CAMERA},CAMERA_PERMISSION_CODE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if(requestCode == CAMERA_PERMISSION_CODE){
+            if(grantResults.length > 0 && grantResults[0]==PackageManager.PERMISSION_GRANTED){
+                Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
+            }
+            else{
+                Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
 
