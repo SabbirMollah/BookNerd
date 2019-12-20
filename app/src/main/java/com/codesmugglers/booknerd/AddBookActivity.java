@@ -146,15 +146,17 @@ public class AddBookActivity extends AppCompatActivity implements BookAdapter.On
         String userId = mAuth.getCurrentUser().getUid();
 
         DatabaseReference booksDb = FirebaseDatabase.getInstance().getReference().child("Books");
+        DatabaseReference userDb = FirebaseDatabase.getInstance().getReference().child("Users")
+                .child(userId).child("Books");
+
         Map<String,String> userData = new HashMap<String,String>();
         userData.put("Name", mBookList.get(position).getTitle());
         userData.put("ISBN", mBookList.get(position).getIsbn());
         userData.put("Owner", userId);
-        String key = booksDb.push().getKey();
-        booksDb.child(key).setValue(userData);
 
-        DatabaseReference userDb = FirebaseDatabase.getInstance().getReference().child("Users")
-                .child(userId).child("Books");
+        String key = booksDb.push().getKey();
+
+        booksDb.child(key).setValue(userData);
         userDb.push().setValue(key);
     }
 

@@ -107,7 +107,11 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void onCLickAddBook(View view) {
-        Intent ownedBooksIntent = new Intent(MainActivity.this, AddBookActivity.class);
+
+}
+
+    public void onClickProfile(View view) {
+        Intent ownedBooksIntent = new Intent(MainActivity.this, UserProfileActivity.class);
         startActivity(ownedBooksIntent);
     }
 }
