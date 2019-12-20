@@ -5,19 +5,19 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-public class UserProfileActivity extends AppCompatActivity {
+public class ConnectionsActivity extends AppCompatActivity {
+
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener firebaseAuthStateListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_user_profile);
+        setContentView(R.layout.activity_connections);
 
         mAuth = FirebaseAuth.getInstance();
         firebaseAuthStateListener = new FirebaseAuth.AuthStateListener() {
@@ -26,7 +26,7 @@ public class UserProfileActivity extends AppCompatActivity {
                 // If user is logged out, bring him to LoginActivity
                 final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                 if(user == null){
-                    Intent intent = new Intent(UserProfileActivity.this, LoginActivity.class);
+                    Intent intent = new Intent(ConnectionsActivity.this, LoginActivity.class);
                     startActivity(intent);
                     finish();
                 }
@@ -46,24 +46,5 @@ public class UserProfileActivity extends AppCompatActivity {
         if(firebaseAuthStateListener != null){
             mAuth.removeAuthStateListener(firebaseAuthStateListener);
         }
-    }
-
-    public void onCLickOwnedBooks(View view) {
-        Intent intent = new Intent(UserProfileActivity.this, OwnedBooksActivity.class);
-        startActivity(intent);
-    }
-
-    public void onClickAddBook(View view) {
-        Intent intent = new Intent(UserProfileActivity.this, AddBookActivity.class);
-        startActivity(intent);
-    }
-
-    public void onClickMyConnections(View view) {
-        Intent intent = new Intent(UserProfileActivity.this, ConnectionsActivity.class);
-        startActivity(intent);
-    }
-
-    public void onClickLogOut(View view) {
-        mAuth.signOut();
     }
 }
