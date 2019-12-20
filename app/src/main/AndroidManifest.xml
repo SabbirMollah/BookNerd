@@ -2,9 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.codesmugglers.booknerd">
-
-    <!--Internet Permission-->
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Internet Permission -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
         android:allowBackup="true"
@@ -14,7 +14,10 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".AddBookActivity"></activity>
+        <activity android:name=".ConnectionsActivity"></activity>
+        <activity android:name=".OwnedBooksActivity" />
+        <activity android:name=".UserProfileActivity" />
+        <activity android:name=".AddBookActivity" />
         <activity android:name=".RegistrationActivity" />
         <activity android:name=".LoginActivity">
             <intent-filter>
