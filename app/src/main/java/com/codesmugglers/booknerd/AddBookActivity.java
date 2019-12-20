@@ -46,6 +46,7 @@ public class AddBookActivity extends AppCompatActivity implements BookAdapter.On
 
         mAuth = FirebaseAuth.getInstance();
 
+
         mRecyclerView = findViewById(R.id.recycler_view);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -55,23 +56,23 @@ public class AddBookActivity extends AppCompatActivity implements BookAdapter.On
         mRequestQueue = Volley.newRequestQueue(this);
 
 
-        mSearchView = findViewById(R.id.searchView);
-        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-
-                if( ! mSearchView.isIconified()) {
-                    mSearchView.setIconified(true);
-                }
-                parseJson(query);
-                return false;
-            }
-            @Override
-            public boolean onQueryTextChange(String s) {
-                // UserFeedback.show( "SearchOnQueryTextChanged: " + s);
-                return false;
-            }
-        });
+//        mSearchView = findViewById(R.id.searchView);
+//        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+//            @Override
+//            public boolean onQueryTextSubmit(String query) {
+//
+//                if( ! mSearchView.isIconified()) {
+//                    mSearchView.setIconified(true);
+//                }
+//                parseJson(query);
+//                return false;
+//            }
+//            @Override
+//            public boolean onQueryTextChange(String s) {
+//                // UserFeedback.show( "SearchOnQueryTextChanged: " + s);
+//                return false;
+//            }
+//        });
 
 
     }
