@@ -43,7 +43,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AddBookActivity extends AppCompatActivity implements BookAdapter.OnItemClickListener {
+public class AddBookActivity extends AppCompatActivity  {
 
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener firebaseAuthStateListener;
@@ -90,61 +90,52 @@ public class AddBookActivity extends AppCompatActivity implements BookAdapter.On
 //
 //        mBookList = new ArrayList<>();
 //
-//        mRequestQueue = Volley.newRequestQueue(this);
+       mRequestQueue = Volley.newRequestQueue(this);
 
 
     }
 
-    private void parseJson(String query) {
-        mBookList.clear();
-        query = query.replace(" ", "+");
-        String url = "https://openlibrary.org/search.json?q=" + query;
-
+    private void parseJson(final String isbn) {
+        String url = "https://www.googleapis.com/books/v1/volumes?q=isbn:" + isbn;
+        Log.e("Hello", isbn);
         JsonObjectRequest objectRequest = new JsonObjectRequest(Request.Method.GET, url, null,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
+                        String title;
+                        String author;
                         try {
-                            JSONArray docsArray = response.getJSONArray("docs");
-
-                            for (int i=0; i<docsArray.length(); i++) {
-                                JSONObject hit = docsArray.getJSONObject(i);
-                                String title;
-                                String authorName;
-                                String isbn;
-
-                                try{
-                                    title = hit.getString("title");
-                                }
-                                catch(JSONException ex){
-                                    title = "Unknown";
-                                }
-
-                                try{
-                                    authorName = hit.getJSONArray("author_name").get(0).toString();
-                                }
-                                catch(JSONException ex){
-                                    authorName = "Unknown";
-                                }
-
-                                try{
-                                    isbn = hit.getJSONArray("isbn").get(0).toString();
-                                }
-                                catch(JSONException ex){
-                                    //If book has no ISBN then skip
-                                    continue;
-                                }
-
-                                mBookList.add(new Book(title, authorName,isbn));
+                            JSONArray itemsArray = response.getJSONArray("items");
+                            JSONObject volumeInfo = itemsArray.getJSONObject(0).
+                                    getJSONObject("volumeInfo");
+                            try{
+                                title = volumeInfo.getString("title");
                             }
-                            mBookAdapter = new BookAdapter(AddBookActivity.this, mBookList);
-                            mRecyclerView.setAdapter(mBookAdapter);
-
-                            mBookAdapter.setOnItemClickListener(AddBookActivity.this);
+                            catch(JSONException e){
+                                title = "";
+                            }
+                            try{
+                                JSONArray authors = volumeInfo.getJSONArray("authors");
+                                author = authors.getString(0);
+                            }
+                            catch(JSONException e){
+                                author = "";
+                            }
                         } catch (JSONException e) {
                             e.printStackTrace();
+                            title = "";
+                            author = "";
                         }
+                        Log.e(title,isbn);
 
+                        mTitle = findViewById(R.id.title);
+                        mAuthor = findViewById(R.id.author);
+                        mIsbn = findViewById(R.id.isbn);
+                        mTitle.setText(title);
+                        mAuthor.setText(author);
+                        mIsbn.setText(isbn);
+                        Log.e(title,isbn);
+                        Log.e(title,mTitle.getText().toString());
                     }
                 },
                 new Response.ErrorListener() {
@@ -174,25 +165,6 @@ public class AddBookActivity extends AppCompatActivity implements BookAdapter.On
         }
     }
 
-    @Override
-    public void onItemClick(int position) {
-        String userId = mAuth.getCurrentUser().getUid();
-
-        DatabaseReference booksDb = FirebaseDatabase.getInstance().getReference().child("Books");
-        DatabaseReference userDb = FirebaseDatabase.getInstance().getReference().child("Users")
-                .child(userId).child("Books");
-
-        Map<String,String> userData = new HashMap<String,String>();
-        userData.put("Name", mBookList.get(position).getTitle());
-        userData.put("ISBN", mBookList.get(position).getIsbn());
-        userData.put("Owner", userId);
-
-        String key = booksDb.push().getKey();
-
-        booksDb.child(key).setValue(userData);
-        userDb.push().setValue(key);
-    }
-
     public void onClickScan(View view) {
         if(ContextCompat.checkSelfPermission(AddBookActivity.this,
                 Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED){
@@ -212,7 +184,9 @@ public class AddBookActivity extends AppCompatActivity implements BookAdapter.On
             String resultCode = result.getText();
             Toast.makeText(AddBookActivity.this, resultCode, Toast.LENGTH_SHORT).show();
             setContentView(R.layout.activity_add_book);
-            
+
+            parseJson(resultCode);
+
             scannerView.stopCamera();
         }
     }
