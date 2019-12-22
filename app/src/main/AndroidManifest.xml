@@ -14,7 +14,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".ConnectionsActivity"></activity>
+        <activity android:name=".ChatActivity"></activity>
+        <activity android:name=".ConnectionsActivity" />
         <activity android:name=".OwnedBooksActivity" />
         <activity android:name=".UserProfileActivity" />
         <activity android:name=".AddBookActivity" />

@@ -14,29 +14,48 @@
         android:layout_gravity="center">
 
         <TextView
-            android:id="@+id/title"
+            android:id="@+id/name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/book_name"
+            android:text="@string/full_name"
             android:textColor="@android:color/black"
             android:textSize="20sp" />
 
         <TextView
-            android:id="@+id/author"
+            android:id="@+id/gender"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/author_name"
+            android:text="Gender"
             android:layout_gravity="center"
             android:textColor="@android:color/black"
             android:textSize="20sp" />
         <TextView
-            android:id="@+id/isbn"
+            android:id="@+id/city"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="@string/author_name"
+            android:text="City"
             android:textColor="@android:color/black"
             android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/user_book"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Connections's Book"
+            android:textColor="@android:color/black"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/connection_book"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="User's Book"
+            android:textColor="@android:color/black"
+            android:textSize="20sp" />
+
     </LinearLayout>
 
 </LinearLayout>
