@@ -1,6 +1,7 @@
 package com.codesmugglers.booknerd.Adapter;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,13 +31,13 @@ public class ConnectionAdapter  extends RecyclerView.Adapter<ConnectionViewHolde
         View layoutView = LayoutInflater.from(parent.getContext()).inflate(R.layout.connected_user_item,null,false);
         RecyclerView.LayoutParams lp = new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         layoutView.setLayoutParams(lp);
-        ConnectionViewHolder rcv = new ConnectionViewHolder(layoutView);
+        ConnectionViewHolder rcv = new ConnectionViewHolder(layoutView, connections);
 
         return rcv;
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ConnectionViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ConnectionViewHolder holder, final int position) {
         holder.mName.setText(connections.get(position).getConnectedUser().getName());
         holder.mGender.setText(connections.get(position).getConnectedUser().getGender());
         holder.mCity.setText(connections.get(position).getConnectedUser().getCity());

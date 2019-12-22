@@ -14,4 +14,6 @@
     <string name="add_book">Add a book</string>
     <string name="todo">TODO</string>
     <string name="user_profile">User Profile</string>
+    <string name="send">Send</string>
+    <string name="message">message...</string>
 </resources>

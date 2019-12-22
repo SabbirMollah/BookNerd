@@ -1,11 +1,13 @@
 package com.codesmugglers.booknerd.Model;
 
 public class Connection {
+    private String connectedUserId;
     private User connectedUser;
     private Book usersBook;
     private Book connectedUsersBook;
 
-    public Connection(User connectedUser, Book usersBook, Book connectedUsersBook) {
+    public Connection(String connectedUserId, User connectedUser, Book usersBook, Book connectedUsersBook) {
+        this.connectedUserId = connectedUserId;
         this.connectedUser = connectedUser;
         this.usersBook = usersBook;
         this.connectedUsersBook = connectedUsersBook;
@@ -35,6 +37,14 @@ public class Connection {
         this.connectedUsersBook = connectedUsersBook;
     }
 
+    public String getConnectedUserId() {
+        return connectedUserId;
+    }
+
+    public void setConnectedUserId(String connectedUserId) {
+        this.connectedUserId = connectedUserId;
+    }
+
     @Override
     public String toString() {
         return "Connection{" +
@@ -43,4 +53,6 @@ public class Connection {
                 ", connectedUsersBook=" + connectedUsersBook +
                 '}';
     }
+
+
 }

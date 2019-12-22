@@ -7,7 +7,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.codesmugglers.booknerd.Adapter.ConnectionAdapter;
 
@@ -18,7 +17,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
@@ -57,6 +55,7 @@ public class ConnectionsActivity extends AppCompatActivity {
 
         mCurrentUserId = mAuth.getCurrentUser().getUid();
         mRecyclerView = findViewById(R.id.recycler_view);
+
         mRecyclerView.setNestedScrollingEnabled(false);
         mRecyclerView.setHasFixedSize(true);
 
@@ -117,7 +116,7 @@ public class ConnectionsActivity extends AppCompatActivity {
         });
     }
 
-    private void fetchUserInformation(String connectedUserId, final Book userBook, final Book connectedUserBook){
+    private void fetchUserInformation(final String connectedUserId, final Book userBook, final Book connectedUserBook){
         Query connectedUsersQuery = FirebaseDatabase.getInstance().getReference()
                 .child("Users").orderByKey().equalTo(connectedUserId);
         connectedUsersQuery.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -132,7 +131,7 @@ public class ConnectionsActivity extends AppCompatActivity {
 
                         User connectedUser = new User(name, dob, gender, city);
 
-                        Connection connection = new Connection(connectedUser, userBook, connectedUserBook);
+                        Connection connection = new Connection(connectedUserId, connectedUser, userBook, connectedUserBook);
 
                         connections.add(connection);
                         mConnectionAdapter.notifyDataSetChanged();
