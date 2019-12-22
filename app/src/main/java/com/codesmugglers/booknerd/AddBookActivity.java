@@ -6,8 +6,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.content.DialogInterface;
@@ -17,7 +15,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -39,7 +36,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,11 +44,7 @@ public class AddBookActivity extends AppCompatActivity  {
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener firebaseAuthStateListener;
 
-    private RecyclerView mRecyclerView;
-    private BookAdapter mBookAdapter;
-    private ArrayList<Book> mBookList;
     private RequestQueue mRequestQueue;
-    private SearchView mSearchView;
 
     private EditText mTitle;
     private EditText mAuthor;
@@ -84,12 +76,6 @@ public class AddBookActivity extends AppCompatActivity  {
         mAuthor = findViewById(R.id.author);
         mIsbn = findViewById(R.id.isbn);
 
-//        mRecyclerView = findViewById(R.id.recycler_view);
-//        mRecyclerView.setHasFixedSize(true);
-//        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-//
-//        mBookList = new ArrayList<>();
-//
        mRequestQueue = Volley.newRequestQueue(this);
 
 
@@ -125,8 +111,10 @@ public class AddBookActivity extends AppCompatActivity  {
                             e.printStackTrace();
                             title = "";
                             author = "";
+                            Toast.makeText(AddBookActivity.this, "Couldn't find any book!",
+                                    Toast.LENGTH_SHORT).show();
                         }
-                        Log.e(title,isbn);
+
 
                         mTitle = findViewById(R.id.title);
                         mAuthor = findViewById(R.id.author);
@@ -134,8 +122,6 @@ public class AddBookActivity extends AppCompatActivity  {
                         mTitle.setText(title);
                         mAuthor.setText(author);
                         mIsbn.setText(isbn);
-                        Log.e(title,isbn);
-                        Log.e(title,mTitle.getText().toString());
                     }
                 },
                 new Response.ErrorListener() {
@@ -194,8 +180,8 @@ public class AddBookActivity extends AppCompatActivity  {
     private void requestCameraPermission(){
         if(ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.CAMERA)){
             new AlertDialog.Builder(this)
-                    .setTitle("Permission Needed").
-                    setMessage("Hellow")
+                    .setTitle("Camera Permission Needed").
+                    setMessage("We need your camera permission to scan Barcode")
                     .setPositiveButton("ok", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
@@ -234,11 +220,11 @@ public class AddBookActivity extends AppCompatActivity  {
 
         DatabaseReference booksDb = FirebaseDatabase.getInstance().getReference().child("Books");
         DatabaseReference userDb = FirebaseDatabase.getInstance().getReference().child("Users")
-                .child(userId).child("Books");
+                .child(userId).child("OwnedBooks");
 
         Map<String,String> userData = new HashMap<String,String>();
-        userData.put("Name", mTitle.getText().toString());
-        userData.put("ISBN", mIsbn.getText().toString());
+        userData.put("Title", mTitle.getText().toString());
+        userData.put("Isbn", mIsbn.getText().toString());
         userData.put("Author", mAuthor.getText().toString());
         userData.put("Owner", userId);
 
@@ -251,7 +237,6 @@ public class AddBookActivity extends AppCompatActivity  {
             }
         });
         userDb.push().setValue(key);
-
 
     }
 }
