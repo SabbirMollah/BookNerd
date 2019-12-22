@@ -2,16 +2,19 @@ package com.codesmugglers.booknerd;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -25,30 +28,30 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.zxing.Result;
 
+import me.dm7.barcodescanner.zxing.ZXingScannerView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AddBookActivity extends AppCompatActivity implements BookAdapter.OnItemClickListener {
+public class AddBookActivity extends AppCompatActivity  {
 
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener firebaseAuthStateListener;
 
-    private RecyclerView mRecyclerView;
-    private BookAdapter mBookAdapter;
-    private ArrayList<Book> mBookList;
     private RequestQueue mRequestQueue;
-    private SearchView mSearchView;
 
     private EditText mTitle;
     private EditText mAuthor;
     private EditText mIsbn;
+
+    private static final int CAMERA_PERMISSION_CODE = 1;
+    private ZXingScannerView scannerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,67 +76,52 @@ public class AddBookActivity extends AppCompatActivity implements BookAdapter.On
         mAuthor = findViewById(R.id.author);
         mIsbn = findViewById(R.id.isbn);
 
-//        mRecyclerView = findViewById(R.id.recycler_view);
-//        mRecyclerView.setHasFixedSize(true);
-//        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-//
-//        mBookList = new ArrayList<>();
-//
-//        mRequestQueue = Volley.newRequestQueue(this);
+       mRequestQueue = Volley.newRequestQueue(this);
 
 
     }
 
-    private void parseJson(String query) {
-        mBookList.clear();
-        query = query.replace(" ", "+");
-        String url = "https://openlibrary.org/search.json?q=" + query;
-
+    private void parseJson(final String isbn) {
+        String url = "https://www.googleapis.com/books/v1/volumes?q=isbn:" + isbn;
+        Log.e("Hello", isbn);
         JsonObjectRequest objectRequest = new JsonObjectRequest(Request.Method.GET, url, null,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
+                        String title;
+                        String author;
                         try {
-                            JSONArray docsArray = response.getJSONArray("docs");
-
-                            for (int i=0; i<docsArray.length(); i++) {
-                                JSONObject hit = docsArray.getJSONObject(i);
-                                String title;
-                                String authorName;
-                                String isbn;
-
-                                try{
-                                    title = hit.getString("title");
-                                }
-                                catch(JSONException ex){
-                                    title = "Unknown";
-                                }
-
-                                try{
-                                    authorName = hit.getJSONArray("author_name").get(0).toString();
-                                }
-                                catch(JSONException ex){
-                                    authorName = "Unknown";
-                                }
-
-                                try{
-                                    isbn = hit.getJSONArray("isbn").get(0).toString();
-                                }
-                                catch(JSONException ex){
-                                    //If book has no ISBN then skip
-                                    continue;
-                                }
-
-                                mBookList.add(new Book(title, authorName,isbn));
+                            JSONArray itemsArray = response.getJSONArray("items");
+                            JSONObject volumeInfo = itemsArray.getJSONObject(0).
+                                    getJSONObject("volumeInfo");
+                            try{
+                                title = volumeInfo.getString("title");
                             }
-                            mBookAdapter = new BookAdapter(AddBookActivity.this, mBookList);
-                            mRecyclerView.setAdapter(mBookAdapter);
-
-                            mBookAdapter.setOnItemClickListener(AddBookActivity.this);
+                            catch(JSONException e){
+                                title = "";
+                            }
+                            try{
+                                JSONArray authors = volumeInfo.getJSONArray("authors");
+                                author = authors.getString(0);
+                            }
+                            catch(JSONException e){
+                                author = "";
+                            }
                         } catch (JSONException e) {
                             e.printStackTrace();
+                            title = "";
+                            author = "";
+                            Toast.makeText(AddBookActivity.this, "Couldn't find any book!",
+                                    Toast.LENGTH_SHORT).show();
                         }
 
+
+                        mTitle = findViewById(R.id.title);
+                        mAuthor = findViewById(R.id.author);
+                        mIsbn = findViewById(R.id.isbn);
+                        mTitle.setText(title);
+                        mAuthor.setText(author);
+                        mIsbn.setText(isbn);
                     }
                 },
                 new Response.ErrorListener() {
@@ -163,27 +151,66 @@ public class AddBookActivity extends AppCompatActivity implements BookAdapter.On
         }
     }
 
-    @Override
-    public void onItemClick(int position) {
-        String userId = mAuth.getCurrentUser().getUid();
-
-        DatabaseReference booksDb = FirebaseDatabase.getInstance().getReference().child("Books");
-        DatabaseReference userDb = FirebaseDatabase.getInstance().getReference().child("Users")
-                .child(userId).child("Books");
-
-        Map<String,String> userData = new HashMap<String,String>();
-        userData.put("Name", mBookList.get(position).getTitle());
-        userData.put("ISBN", mBookList.get(position).getIsbn());
-        userData.put("Owner", userId);
-
-        String key = booksDb.push().getKey();
-
-        booksDb.child(key).setValue(userData);
-        userDb.push().setValue(key);
+    public void onClickScan(View view) {
+        if(ContextCompat.checkSelfPermission(AddBookActivity.this,
+                Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED){
+            scannerView = new ZXingScannerView(this);
+            scannerView.setResultHandler(new ZXingScannerResultHandler());
+            setContentView(scannerView);
+            scannerView.startCamera();
+        }
+        else{
+            requestCameraPermission();
+        }
     }
 
-    public void onClickScan(View view) {
-        //parseJson(query);
+    class ZXingScannerResultHandler implements ZXingScannerView.ResultHandler{
+        @Override
+        public void handleResult(Result result) {
+            String resultCode = result.getText();
+            Toast.makeText(AddBookActivity.this, resultCode, Toast.LENGTH_SHORT).show();
+            setContentView(R.layout.activity_add_book);
+
+            parseJson(resultCode);
+
+            scannerView.stopCamera();
+        }
+    }
+
+    private void requestCameraPermission(){
+        if(ActivityCompat.shouldShowRequestPermissionRationale(this,Manifest.permission.CAMERA)){
+            new AlertDialog.Builder(this)
+                    .setTitle("Camera Permission Needed").
+                    setMessage("We need your camera permission to scan Barcode")
+                    .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+
+                        }
+                    })
+                    .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialogInterface.dismiss();
+                        }
+                    })
+                    .create().show();
+        }
+        else {
+            ActivityCompat.requestPermissions(this,new String[] {Manifest.permission.CAMERA},CAMERA_PERMISSION_CODE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if(requestCode == CAMERA_PERMISSION_CODE){
+            if(grantResults.length > 0 && grantResults[0]==PackageManager.PERMISSION_GRANTED){
+                Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
+            }
+            else{
+                Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
 
@@ -193,11 +220,11 @@ public class AddBookActivity extends AppCompatActivity implements BookAdapter.On
 
         DatabaseReference booksDb = FirebaseDatabase.getInstance().getReference().child("Books");
         DatabaseReference userDb = FirebaseDatabase.getInstance().getReference().child("Users")
-                .child(userId).child("Books");
+                .child(userId).child("OwnedBooks");
 
         Map<String,String> userData = new HashMap<String,String>();
-        userData.put("Name", mTitle.getText().toString());
-        userData.put("ISBN", mIsbn.getText().toString());
+        userData.put("Title", mTitle.getText().toString());
+        userData.put("Isbn", mIsbn.getText().toString());
         userData.put("Author", mAuthor.getText().toString());
         userData.put("Owner", userId);
 
@@ -210,7 +237,6 @@ public class AddBookActivity extends AppCompatActivity implements BookAdapter.On
             }
         });
         userDb.push().setValue(key);
-
 
     }
 }
