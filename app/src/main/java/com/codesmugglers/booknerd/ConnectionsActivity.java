@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.codesmugglers.booknerd.Adapter.ConnectionAdapter;
 
@@ -65,6 +66,7 @@ public class ConnectionsActivity extends AppCompatActivity {
         mConnectionAdapter = new ConnectionAdapter(getConnections(), ConnectionsActivity.this);
         mRecyclerView.setAdapter(mConnectionAdapter);
 
+        Log.e("Hello", "Hi");
         fetchConnectionsInformation();
 
     }
@@ -87,10 +89,12 @@ public class ConnectionsActivity extends AppCompatActivity {
     private void fetchConnectionsInformation(){
         Query connectionsQuery = FirebaseDatabase.getInstance().getReference()
                 .child("Connections").orderByChild("UserId").equalTo(mCurrentUserId);
+        Log.e("Hello2", "Hi");
         connectionsQuery.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
+                    Log.e("Hello3", "Hi");
                     for(DataSnapshot connection: dataSnapshot.getChildren()){
                         String connectedUsersId = connection.child("ConnectedUsersId").getValue().toString();
                         String connectedUsersBookAuthor = connection.child("ConnectedUsersBook").child("Author").getValue().toString();
@@ -103,6 +107,8 @@ public class ConnectionsActivity extends AppCompatActivity {
 
                         Book userBook = new Book(usersBookTitle,usersBookAuthor,usersBookIsbn);
                         Book connectedUsersBoook = new Book(connectedUsersBookTitle, connectedUsersBookAuthor, connectedUsersBookTitle);
+
+                        Log.e("HEllo",connection.getValue().toString());
 
                         fetchUserInformation(connectedUsersId, userBook, connectedUsersBoook);
                     }

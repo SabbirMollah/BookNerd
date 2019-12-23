@@ -1,24 +1,20 @@
 package com.codesmugglers.booknerd;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import com.codesmugglers.booknerd.Adapter.SuggestedBooksArrayAdapter;
 import com.codesmugglers.booknerd.Model.Book;
-import com.codesmugglers.booknerd.Model.Connection;
 import com.codesmugglers.booknerd.Model.SuggestedBook;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -28,7 +24,6 @@ import com.google.firebase.database.ValueEventListener;
 import com.lorentzos.flingswipe.SwipeFlingAdapterView;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -106,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
                 leftSwipeDb.setValue("False");
                 rightSwipeDb.setValue("True");
 
-                checkConnection(mCurrentUserId, suggestedBook.getOwnerId(), suggestedBook);
+                setConnection(mCurrentUserId, suggestedBook.getOwnerId(), suggestedBook);
             }
 
             @Override
@@ -183,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void checkConnection(final String userId, final String ownerId, final SuggestedBook suggestedBook){
+    private void setConnection(final String userId, final String ownerId, final SuggestedBook suggestedBook){
         Query ownersBooksDB = FirebaseDatabase.getInstance().getReference()
                 .child("Books").orderByChild("Owner").equalTo(mCurrentUserId);
         ownersBooksDB.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -217,7 +212,7 @@ public class MainActivity extends AppCompatActivity {
                                 usersBook.put("Isbn", isbn);
                                 usersBook.put("Owner", userId);
                                 connectionsDB.child(connectionsKey).child("UsersBook").setValue(usersBook);
-                                connectionsDB.child(connectionsKey).child("Owner").setValue(userId);
+                                connectionsDB.child(connectionsKey).child("UserId").setValue(userId);
 
                                 Map<String,String> connectedUsersBook = new HashMap<String,String>();
                                 connectedUsersBook.put("Title", suggestedBook.getBook().getTitle());
@@ -225,7 +220,7 @@ public class MainActivity extends AppCompatActivity {
                                 connectedUsersBook.put("Isbn", suggestedBook.getBook().getIsbn());
                                 connectedUsersBook.put("Owner", ownerId);
                                 connectionsDB.child(connectionsKey).child("ConnectedUsersBook").setValue(connectedUsersBook);
-                                connectionsDB.child(connectionsKey).child("Owner").setValue(ownerId);
+                                connectionsDB.child(connectionsKey).child("ConnectedUserId").setValue(ownerId);
 
                                 connectionsDB.child(connectionsKey).child("ChatId").setValue(chatKey);
 
@@ -235,11 +230,18 @@ public class MainActivity extends AppCompatActivity {
                                 String secondConnectionsKey = FirebaseDatabase.getInstance().getReference()
                                         .child("Connections").push().getKey();
                                 connectionsDB.child(secondConnectionsKey).child("UsersBook").setValue(connectedUsersBook);
-                                connectionsDB.child(secondConnectionsKey).child("Owner").setValue(ownerId);
+                                connectionsDB.child(secondConnectionsKey).child("UserId").setValue(ownerId);
                                 connectionsDB.child(secondConnectionsKey).child("ConnectedUsersBook").setValue(usersBook);
-                                connectionsDB.child(secondConnectionsKey).child("Owner").setValue(userId);
+                                connectionsDB.child(secondConnectionsKey).child("ConnectedUserId").setValue(userId);
                                 connectionsDB.child(secondConnectionsKey).child("ChatId").setValue(chatKey);
 
+
+                                DatabaseReference userConnectionDB = FirebaseDatabase.getInstance().getReference()
+                                        .child("Users").child(userId).child("Connections").child(ownerId);
+                                DatabaseReference otherUserConnectionDB = FirebaseDatabase.getInstance().getReference()
+                                        .child("Users").child(ownerId).child("Connections").child(userId);
+                                userConnectionDB.setValue("True");
+                                otherUserConnectionDB.setValue("True");
 
                                 break;
                             }
