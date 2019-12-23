@@ -29,7 +29,9 @@ import com.lorentzos.flingswipe.SwipeFlingAdapterView;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -90,8 +92,8 @@ public class MainActivity extends AppCompatActivity {
                         .child("Books").child(suggestedBook.getBookId()).child("Left").child(mCurrentUserId);
                 DatabaseReference rightSwipeDb = FirebaseDatabase.getInstance().getReference()
                         .child("Books").child(suggestedBook.getBookId()).child("Right").child(mCurrentUserId);
-                leftSwipeDb.setValue(true);
-                rightSwipeDb.setValue(false);
+                leftSwipeDb.setValue("True");
+                rightSwipeDb.setValue("False");
             }
 
             @Override
@@ -101,10 +103,10 @@ public class MainActivity extends AppCompatActivity {
                         .child("Books").child(suggestedBook.getBookId()).child("Left").child(mCurrentUserId);
                 DatabaseReference rightSwipeDb = FirebaseDatabase.getInstance().getReference()
                         .child("Books").child(suggestedBook.getBookId()).child("Right").child(mCurrentUserId);
-                leftSwipeDb.setValue(false);
-                rightSwipeDb.setValue(true);
+                leftSwipeDb.setValue("False");
+                rightSwipeDb.setValue("True");
 
-                checkConnection(mCurrentUserId, suggestedBook.getOwnerId());
+                checkConnection(mCurrentUserId, suggestedBook.getOwnerId(), suggestedBook);
             }
 
             @Override
@@ -181,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void checkConnection(final String userId, final String ownerId){
+    private void checkConnection(final String userId, final String ownerId, final SuggestedBook suggestedBook){
         Query ownersBooksDB = FirebaseDatabase.getInstance().getReference()
                 .child("Books").orderByChild("Owner").equalTo(mCurrentUserId);
         ownersBooksDB.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -190,9 +192,10 @@ public class MainActivity extends AppCompatActivity {
                 if(dataSnapshot.exists()){
                     for(DataSnapshot book: dataSnapshot.getChildren()){
                         for(DataSnapshot swipeId: book.child("Right").getChildren()){
-                            if(swipeId.getKey().equals(ownerId)){
+                            Log.e(ownerId,swipeId.getValue().toString()+ " " + swipeId.getKey());
+                            if(swipeId.getKey().equals(ownerId) && swipeId.getValue().toString().equals("True")){
                                 //There is a connection
-                                //Log.e("CONNECTION", "Connection!!!");
+
                                 String title = book.child("Title").getValue().toString();
                                 String author = book.child("Author").getValue().toString();
                                 String isbn = book.child("Isbn").getValue().toString();
@@ -204,6 +207,39 @@ public class MainActivity extends AppCompatActivity {
 
                                 DatabaseReference connectionsDB = FirebaseDatabase.getInstance().getReference()
                                         .child("Connections");
+                                String connectionsKey = FirebaseDatabase.getInstance().getReference()
+                                        .child("Connections").push().getKey();
+
+
+                                Map<String,String> usersBook = new HashMap<String,String>();
+                                usersBook.put("Title", title);
+                                usersBook.put("Author", author);
+                                usersBook.put("Isbn", isbn);
+                                usersBook.put("Owner", userId);
+                                connectionsDB.child(connectionsKey).child("UsersBook").setValue(usersBook);
+                                connectionsDB.child(connectionsKey).child("Owner").setValue(userId);
+
+                                Map<String,String> connectedUsersBook = new HashMap<String,String>();
+                                connectedUsersBook.put("Title", suggestedBook.getBook().getTitle());
+                                connectedUsersBook.put("Author", suggestedBook.getBook().getAuthor());
+                                connectedUsersBook.put("Isbn", suggestedBook.getBook().getIsbn());
+                                connectedUsersBook.put("Owner", ownerId);
+                                connectionsDB.child(connectionsKey).child("ConnectedUsersBook").setValue(connectedUsersBook);
+                                connectionsDB.child(connectionsKey).child("Owner").setValue(ownerId);
+
+                                connectionsDB.child(connectionsKey).child("ChatId").setValue(chatKey);
+
+                                //Second ConnectionsID
+                                DatabaseReference secondConnectionsDB = FirebaseDatabase.getInstance().getReference()
+                                        .child("Connections");
+                                String secondConnectionsKey = FirebaseDatabase.getInstance().getReference()
+                                        .child("Connections").push().getKey();
+                                connectionsDB.child(secondConnectionsKey).child("UsersBook").setValue(connectedUsersBook);
+                                connectionsDB.child(secondConnectionsKey).child("Owner").setValue(ownerId);
+                                connectionsDB.child(secondConnectionsKey).child("ConnectedUsersBook").setValue(usersBook);
+                                connectionsDB.child(secondConnectionsKey).child("Owner").setValue(userId);
+                                connectionsDB.child(secondConnectionsKey).child("ChatId").setValue(chatKey);
+
 
                                 break;
                             }
