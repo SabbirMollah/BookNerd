@@ -1,6 +1,7 @@
 package com.codesmugglers.booknerd;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -12,12 +13,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.codesmugglers.booknerd.Adapter.BooksAdapter;
 import com.codesmugglers.booknerd.Adapter.ChatAdapter;
 import com.codesmugglers.booknerd.Model.Chat;
-import com.codesmugglers.booknerd.Model.Connection;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -26,7 +26,9 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ChatActivity extends AppCompatActivity {
 
@@ -38,8 +40,9 @@ public class ChatActivity extends AppCompatActivity {
     private RecyclerView.Adapter mChatAdapter;
     private RecyclerView.LayoutManager mChatLayoutManager;
 
-    private String mConnectionId;
+    private String mConnectedUserId;
     private String mChatId;
+    private String mConnectionId;
 
     private EditText mMessage;
     private Button mSend;
@@ -62,7 +65,7 @@ public class ChatActivity extends AppCompatActivity {
                 }
             }
         };
-        mConnectionId = getIntent().getExtras().getString("connectionId");
+        mConnectedUserId = getIntent().getExtras().getString("connectionId");
         mCurrentUserId = mAuth.getCurrentUser().getUid();
 
         mRecyclerView = findViewById(R.id.recycler_view);
@@ -90,24 +93,83 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void getChatId(){
-        DatabaseReference chatDB = FirebaseDatabase.getInstance().getReference();
-    }
-
-    private void sendMessage(){
-        Query userDB = FirebaseDatabase.getInstance().getReference()
-                .child("Users").child(mCurrentUserId).child("Connections").orderByKey().equalTo(mConnectionId);
-        userDB.addListenerForSingleValueEvent(new ValueEventListener() {
+        Query connectionsDB = FirebaseDatabase.getInstance().getReference()
+                .child("Connections").orderByChild("ConnectedUserId").equalTo(mConnectedUserId);
+        connectionsDB.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()){
-                    mChatId = dataSnapshot.getKey();
-                    Log.e("Hello",mChatId);
+                    for(DataSnapshot ds: dataSnapshot.getChildren()){
+                        mChatId = ds.child("ChatId").getValue().toString();
+
+                    }
+                    getChatMessages();
                 }
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
+            }
+        });
+
+    }
+
+
+    private void sendMessage(){
+        String message = mMessage.getText().toString();
+        if(mChatId != null && !message.isEmpty()){
+            DatabaseReference newMessageDB = FirebaseDatabase.getInstance().getReference()
+                    .child("Chats").child(mChatId);
+            String chatKey = newMessageDB.push().getKey();
+
+            Map newMessage = new HashMap();
+            newMessage.put("CreatedByUserId", mCurrentUserId);
+            newMessage.put("Text", message);
+
+            newMessageDB.child(chatKey).setValue(newMessage);
+
+        }
+        mMessage.setText(null);
+    }
+
+    private void getChatMessages(){
+        Log.e("Hey", "Getting messages");
+        DatabaseReference chatDB = FirebaseDatabase.getInstance().getReference()
+                .child("Chats").child(mChatId);
+        chatDB.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                if(dataSnapshot.exists()){
+                    String message = "";
+                    boolean createdFromUser = false;
+
+                    if(dataSnapshot.child("CreatedByUserId").getValue()!=null){
+                        if(dataSnapshot.child("CreatedByUserId").getValue().toString().equals(mCurrentUserId)){
+                            createdFromUser = true;
+                        }
+                    }
+                    if(dataSnapshot.child("Text").getValue()!=null){
+                        message = dataSnapshot.child("Text").getValue().toString();
+                    }
+
+                    Chat chat = new Chat(message, createdFromUser);
+                    chats.add(chat);
+                    mChatAdapter.notifyDataSetChanged();
+                    Log.e(message, String.valueOf(createdFromUser));
+                    Log.e("Array", chats.toString());
+                }
+            }
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+            }
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+            }
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
             }
         });
     }

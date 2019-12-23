@@ -66,7 +66,7 @@ public class ConnectionsActivity extends AppCompatActivity {
         mConnectionAdapter = new ConnectionAdapter(getConnections(), ConnectionsActivity.this);
         mRecyclerView.setAdapter(mConnectionAdapter);
 
-        Log.e("Hello", "Hi");
+
         fetchConnectionsInformation();
 
     }
@@ -89,14 +89,14 @@ public class ConnectionsActivity extends AppCompatActivity {
     private void fetchConnectionsInformation(){
         Query connectionsQuery = FirebaseDatabase.getInstance().getReference()
                 .child("Connections").orderByChild("UserId").equalTo(mCurrentUserId);
-        Log.e("Hello2", "Hi");
+
         connectionsQuery.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
-                    Log.e("Hello3", "Hi");
+
                     for(DataSnapshot connection: dataSnapshot.getChildren()){
-                        String connectedUsersId = connection.child("ConnectedUsersId").getValue().toString();
+                        String connectedUsersId = connection.child("ConnectedUserId").getValue().toString();
                         String connectedUsersBookAuthor = connection.child("ConnectedUsersBook").child("Author").getValue().toString();
                         String connectedUsersBookTitle = connection.child("ConnectedUsersBook").child("Title").getValue().toString();
                         String connectedUsersBookIsbn = connection.child("ConnectedUsersBook").child("Isbn").getValue().toString();
@@ -108,7 +108,6 @@ public class ConnectionsActivity extends AppCompatActivity {
                         Book userBook = new Book(usersBookTitle,usersBookAuthor,usersBookIsbn);
                         Book connectedUsersBoook = new Book(connectedUsersBookTitle, connectedUsersBookAuthor, connectedUsersBookTitle);
 
-                        Log.e("HEllo",connection.getValue().toString());
 
                         fetchUserInformation(connectedUsersId, userBook, connectedUsersBoook);
                     }
